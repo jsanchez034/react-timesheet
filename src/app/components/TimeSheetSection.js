@@ -99,7 +99,7 @@ class TimeSheetSection extends Component {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th>Hourly Rate Groups</th>
+                    <th>Hourly Rate</th>
                     <th>Total Hours</th>
                   </tr>
                 </thead>

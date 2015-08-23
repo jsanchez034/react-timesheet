@@ -1,0 +1,59 @@
+.direct-deposit {
+  padding-top: 35px;
+}
+
+.tutor-disclaimer input {
+  margin-bottom: 0;
+  margin-right: 5px;
+}
+
+.tutor-disclaimer .label-body {
+  display: inline;
+}
+
+.time-sheet-row input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
+.edit-row {
+  padding: 0;
+}
+
+.remove-row {
+  padding-bottom: 6px;
+  padding-right: 10px;
+}
+
+.remove-row,
+.add-row {
+  display: none;
+  font-size: 45px;
+  font-weight: bold;
+  line-height: 20px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.time-sheet-row:hover .remove-row,
+.time-sheet-row:hover .add-row {
+  display: inline-block;
+}
+
+.grand-total-label {
+  text-align: right;
+}
+
+.grand-total-label,
+.grand-total {
+  font-weight: bold;
+}
+
+.submit-timesheet {
+  float: right;
+}
+
+.email-to {
+  min-width: 200px;
+}

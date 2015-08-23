@@ -4,18 +4,23 @@ import _ from 'lodash';
 
 import TimeSheetAppDispatcher from '../dispatcher/TimeSheetAppDispatcher';
 import {CHANGE, TIMESHEET} from '../constants/TimeSheetConstants';
+import TimeSheetAggregators from '../utils/TimeSheetAggregators';
 
 var _timeSheet = Immutable.fromJS({
-  0: [{
-    'id': _.uniqueId(),
-    'Date': null,
-    'StartTime': null,
-    'EndTime': null,
-    'Name': null,
-    'HourlyRate': null,
-    'TotalHours': 0,
-    'TotalOwed': 0
-  }]
+  0: {
+    LineItems: [{
+      'id': _.uniqueId(),
+      'Date': null,
+      'StartTime': null,
+      'EndTime': null,
+      'Name': null,
+      'HourlyRate': null,
+      'TotalHours': 0,
+      'TotalOwed': 0
+    }],
+    GrandTotalOwed: 0,
+    HourlyRateGroups: null
+  }
 });
 
 var TimeSheetStore = _.extend({}, EventEmitter.prototype, {
@@ -40,10 +45,16 @@ var TimeSheetStore = _.extend({}, EventEmitter.prototype, {
   onUpdateLine (userId, lineId, line) {
     var immutableLine = Immutable.fromJS(line);
 
-    _timeSheet = _timeSheet.updateIn([userId], (value) => {
-      return value.update(value.findIndex((val) => val.get('id') === lineId ), line => {
-        return line.merge(immutableLine);
+    _timeSheet = _timeSheet.withMutations((map) => {
+      map.updateIn([userId, 'LineItems'], (value) => {
+        return value.update(value.findIndex((val) => val.get('id') === lineId ), line => {
+          return line.merge(immutableLine);
+        });
       });
+
+      let lineItems = map.getIn([userId, 'LineItems']);
+      map.setIn([userId, 'GrandTotalOwed'], TimeSheetAggregators.totalOwed(lineItems));
+      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetAggregators.hoursByHourlRate(lineItems));
     });
   },
 
@@ -51,20 +62,27 @@ var TimeSheetStore = _.extend({}, EventEmitter.prototype, {
     var immutableLine = Immutable.fromJS(line);
     immutableLine = immutableLine.set('id', _.uniqueId());
 
-    _timeSheet = _timeSheet.updateIn([userId], Immutable.List(), lines => lines.push(immutableLine));
+    _timeSheet = _timeSheet.updateIn([userId, 'LineItems'], Immutable.List(), lines => lines.push(immutableLine));
   },
 
   onLineRemove (userId, lineId) {
-    var userTimeSheetLength = _timeSheet.get(userId).size;
+    var userTimeSheetLength = _timeSheet.getIn([userId, 'LineItems']).size;
 
     if (userTimeSheetLength === 1) {
       return;
     }
 
-    _timeSheet = _timeSheet.updateIn([userId], (value) => {
-      return value.delete(value.findIndex((val) => val.get('id') === lineId ));
+    _timeSheet = _timeSheet.withMutations((map) => {
+      map.updateIn([userId, 'LineItems'], (value) => {
+        return value.delete(value.findIndex((val) => val.get('id') === lineId ));
+      });
+
+      let lineItems = map.getIn([userId, 'LineItems']);
+      map.setIn([userId, 'GrandTotalOwed'], TimeSheetAggregators.totalOwed(lineItems));
+      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetAggregators.hoursByHourlRate(lineItems));
     });
   }
+
 });
 
 TimeSheetAppDispatcher.register(function (action) {

@@ -84,6 +84,10 @@ class TimeSheetRow extends Component {
         targetName = e.target.name,
         targetValue = e.target.value;
 
+    if (targetName === 'HourlyRate') {
+      targetValue = parseFloat(targetValue);
+    }
+
     if (elementType === 'text') {
       edit[targetName] = targetValue;
     }

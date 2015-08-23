@@ -1,4 +1,4 @@
-import {List} from 'immutable';
+import {Map} from 'immutable';
 import React from 'react/addons';
 import Component from './Component';
 import TimeSheetRow from './TimeSheetRow';
@@ -15,7 +15,8 @@ class TimeSheetSection extends Component {
   }
 
   render() {
-    let timeSheet = this.props.timeSheet.map((line) => {
+    let timeSheetLineItems = this.props.timeSheet.get('LineItems'),
+        timeSheetRows = timeSheetLineItems.map((line) => {
           let lineId = line.get('id');
 
           return (
@@ -28,17 +29,25 @@ class TimeSheetSection extends Component {
             />
           );
         }, this),
-        hourlyRateGroups = this._hoursByHourlRate(this.props.timeSheet).map((rateTotal, rate) => {
-          if (!rate) {
-            return;
-          }
-          return <HourlyRateGroup
-            key={rate}
-            hourlyRate={rate}
-            hourlyRateTotalHours={rateTotal}
-          />
-        }),
-        totalOwed = this._totalOwed(this.props.timeSheet);
+        hourlyRateGroups = this.props.timeSheet.get('HourlyRateGroups'),
+        rateGroupRows = null,
+        totalOwed = this.props.timeSheet.get('GrandTotalOwed');
+
+    if (hourlyRateGroups) {
+      rateGroupRows = hourlyRateGroups.sortBy((rateTotal, rate) => rate)
+                                      .map((rateTotal, rate) => {
+                                        if (!rate) {
+                                          return;
+                                        }
+                                        return (
+                                          <HourlyRateGroup
+                                            key={rate}
+                                            hourlyRate={rate}
+                                            hourlyRateTotalHours={rateTotal}
+                                          />
+                                        );
+                                      });
+    }
 
     return (
       <div className="row">
@@ -68,13 +77,13 @@ class TimeSheetSection extends Component {
                 </tr>
               </thead>
               <tbody>
-                {timeSheet}
+                {timeSheetRows}
                 <tr>
                   <td colSpan="6" className="grand-total-label">
                     Monthly Totals
                   </td>
                   <td colSpan="2" className="grand-total">
-                    {totalOwed}
+                    $ {totalOwed}
                   </td>
                 </tr>
               </tbody>
@@ -95,30 +104,13 @@ class TimeSheetSection extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {hourlyRateGroups}
+                  {rateGroupRows}
                 </tbody>
               </table>
             </div>
         </div>
       </div>
     );
-  }
-
-  _totalOwed(timeSheet) {
-    let total = timeSheet.reduce((reduction, timeSheetLine) => {
-          return reduction += (timeSheetLine.get('TotalOwed') || 0);
-        }, 0);
-
-    return "$" + Math.round(total * 100) / 100;
-  }
-
-  _hoursByHourlRate(timeSheet) {
-    return timeSheet.groupBy((timeSheetLine) => timeSheetLine.get('HourlyRate'), this)
-                    .map((timeSheetLine, hourlyRate, iterable) => {
-                      return timeSheetLine.reduce((reduction, line) => {
-                        return Math.round((reduction + (line.get('TotalHours') || 0)) * 100) / 100;
-                      }, 0);
-                    });
   }
 
   onRemoveRow(rowId) {
@@ -141,7 +133,7 @@ class TimeSheetSection extends Component {
 
 TimeSheetSection.propTypes = {
   userId: React.PropTypes.string.isRequired,
-  timeSheet: React.PropTypes.instanceOf(List).isRequired
+  timeSheet: React.PropTypes.instanceOf(Map).isRequired
 };
 
 export default TimeSheetSection;

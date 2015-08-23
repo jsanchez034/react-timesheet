@@ -71,9 +71,6 @@ class TimeSheetApp extends Component {
       return;
     }
 
-    let documentClone = document.documentElement.cloneNode(true);
-    this._prepDOM(documentClone);
-
     // Submit the form DOM through ajax to php backend
     let submitButton = this.refs.formSubmit.getDOMNode();
     submitButton.disabled = true;
@@ -81,7 +78,13 @@ class TimeSheetApp extends Component {
 
     request
       .post('/php/emailTimeSheet.php')
-      .send({ html: documentClone.outerHTML, to: emailTo })
+      .send({
+        data: {
+          user: this.state.user.toJSON(),
+          timesheet: this.state.timeSheet.toJSON()
+        },
+        to: emailTo
+      })
       .end(function(err, res){
         submitButton.value = 'Sent';
         setTimeout(() =>{
@@ -89,31 +92,6 @@ class TimeSheetApp extends Component {
           submitButton.value = 'Submit';
         }, 1500);
       });
-  }
-
-  _prepDOM(document) {
-    let inputs = document.getElementsByTagName('input'),
-        len = inputs.length;
-
-    for (let i = 0; i < len; i++) {
-      let input = inputs[i],
-          elementType = input.type;
-
-      input.removeAttribute('data-reactid');
-      input.removeAttribute('size');
-      input.removeAttribute('maxlength');
-
-      if (elementType === 'text') {
-        input.setAttribute('value', input.value);
-        if (input.parentNode.nodeName === 'TD') {
-          input.setAttribute('style', 'width:15%;');
-        }
-      } else if (elementType === 'checkbox' && input.checked) {
-        input.setAttribute('checked', 'checked');
-      } else if (elementType === 'submit') {
-        input.parentNode.removeChild(input);
-      }
-    }
   }
 
 }

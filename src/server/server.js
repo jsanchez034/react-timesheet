@@ -5,9 +5,11 @@ var app = Express();
 var server;
 
 const PATH_STYLES = path.resolve(__dirname, '../client/styles');
+const PATH_IMAGES = path.resolve(__dirname, '../client/images');
 const PATH_DIST = path.resolve(__dirname, '../../dist');
 
 app.use('/styles', Express.static(PATH_STYLES));
+app.use('/images', Express.static(PATH_IMAGES));
 app.use(Express.static(PATH_DIST));
 
 app.get('/', (req, res) => {

@@ -1,3 +1,30 @@
+.header-wrap {
+  line-height: 70px;
+}
+
+.header {
+  vertical-align: middle;
+  display: inline-block;
+  margin-bottom: 0;
+}
+
+.logo {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  float: none;
+}
+
+@media (min-width: 750px) {
+  .header-wrap {
+    line-height: 125px;
+  }
+
+  .logo {
+    float: right;
+  }
+}
+
 .direct-deposit {
   padding-top: 35px;
 }

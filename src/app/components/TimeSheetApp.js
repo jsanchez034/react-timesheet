@@ -39,10 +39,15 @@ class TimeSheetApp extends Component {
     return (
       <div className="container">
         <div className="row">
-          <h2>Time Sheet</h2>
+          <div className="six columns header-wrap">
+            <h2 className="header">Time Sheet</h2>
+          </div>
+          <div className="six columns">
+            <img className="logo" src="/images/logo_oneononelearning.png" height="125px" width="125px" />
+          </div>
         </div>
         <div className="row">
-          <div className="twelve column">
+          <div className="twelve columns">
             <form onSubmit={this._sendForm}>
               <label htmlFor="emailTo">Coordinator</label>
               <select ref="emailTo" name="emailTo" className="email-to" defaultValue="">

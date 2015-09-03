@@ -13,41 +13,6 @@ class TimeSheetRow extends Component {
     this._handleChange = this._handleChange.bind(this);
   }
 
-  _totalHours(start, end) {
-    let toMinutes = function(s) {
-      let part = s && s.match(/(\d+):(\d+)(?: )?(am|pm)?/i);
-
-      if (!part || part.length !== 4) {
-        return NaN;
-      }
-
-      let hh = parseInt(part[1], 10);
-      let mm = parseInt(part[2], 10);
-      let ap = part[3] ? part[3].toUpperCase() : null;
-
-      if (ap === "AM") {
-          if (hh == 12) {
-              hh = 0;
-          }
-      }
-      if (ap === "PM") {
-          if (hh != 12) {
-              hh += 12;
-          }
-      }
-      return (hh * 60) + mm;
-    };
-
-    let totalMinutes = toMinutes(end) - toMinutes(start);
-
-    return !isNaN(totalMinutes) && totalMinutes > 0 ? Math.round((totalMinutes / 60) * 100) / 100 : 0;
-
-  }
-
-  _totalOwed(hours, rate) {
-    return Math.round(((hours || 0) * (rate || 0) * 100)) / 100;
-  }
-
   render() {
     let timeSheetLine = this.props.timeSheetLine;
 
@@ -90,19 +55,6 @@ class TimeSheetRow extends Component {
 
     if (elementType === 'text') {
       edit[targetName] = targetValue;
-    }
-
-    if (_.contains(['HourlyRate', 'StartTime', 'EndTime'], targetName)) {
-      let timeSheetLine = this.props.timeSheetLine,
-          startTime = (targetName === 'StartTime') ? targetValue : timeSheetLine.get('StartTime'),
-          endTime = (targetName === 'EndTime') ? targetValue : timeSheetLine.get('EndTime'),
-          totalHours = this._totalHours(startTime, endTime),
-          hourlyRate = (targetName === 'HourlyRate') ? targetValue : timeSheetLine.get('HourlyRate');
-
-      _.extend(edit, {
-        'TotalHours': totalHours,
-        'TotalOwed': this._totalOwed(totalHours, hourlyRate)
-      });
     }
 
     TimeSheetActions.updateLine(this.props.userId, this.props.timeSheetLine.get('id'), edit);

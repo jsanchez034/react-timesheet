@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 import TimeSheetAppDispatcher from '../dispatcher/TimeSheetAppDispatcher';
 import {CHANGE, TIMESHEET} from '../constants/TimeSheetConstants';
-import TimeSheetAggregators from '../utils/TimeSheetAggregators';
+import TimeSheetHelpers from '../utils/TimeSheetHelpers';
 
 var _timeSheet = Immutable.fromJS({
   0: {
@@ -48,13 +48,19 @@ var TimeSheetStore = _.extend({}, EventEmitter.prototype, {
     _timeSheet = _timeSheet.withMutations((map) => {
       map.updateIn([userId, 'LineItems'], (value) => {
         return value.update(value.findIndex((val) => val.get('id') === lineId ), line => {
-          return line.merge(immutableLine);
+          let mutableLine = line.merge(immutableLine).asMutable();
+
+          mutableLine.set('TotalHours', TimeSheetHelpers.totalHours(mutableLine.get('StartTime'), mutableLine.get('EndTime')));
+          mutableLine.set('TotalOwed', TimeSheetHelpers.lineTotalOwed(mutableLine.get('TotalHours'), mutableLine.get('HourlyRate')));
+
+          return mutableLine.asImmutable();
         });
       });
 
       let lineItems = map.getIn([userId, 'LineItems']);
-      map.setIn([userId, 'GrandTotalOwed'], TimeSheetAggregators.totalOwed(lineItems));
-      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetAggregators.hoursByHourlRate(lineItems));
+      map.setIn([userId, 'GrandTotalOwed'], TimeSheetHelpers.grandTotalOwed(lineItems));
+
+      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetHelpers.hoursByHourlRate(lineItems));
     });
   },
 
@@ -78,8 +84,8 @@ var TimeSheetStore = _.extend({}, EventEmitter.prototype, {
       });
 
       let lineItems = map.getIn([userId, 'LineItems']);
-      map.setIn([userId, 'GrandTotalOwed'], TimeSheetAggregators.totalOwed(lineItems));
-      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetAggregators.hoursByHourlRate(lineItems));
+      map.setIn([userId, 'GrandTotalOwed'], TimeSheetHelpers.grandTotalOwed(lineItems));
+      return map.setIn([userId, 'HourlyRateGroups'], TimeSheetHelpers.hoursByHourlRate(lineItems));
     });
   }
 

@@ -28,7 +28,7 @@ class TimeSheetSection extends Component {
               onAddRow={this.onAddRow}
             />
           );
-        }, this),
+        }, this).toArray(),
         hourlyRateGroups = this.props.timeSheet.get('HourlyRateGroups'),
         rateGroupRows = null,
         totalOwed = this.props.timeSheet.get('GrandTotalOwed');
@@ -46,7 +46,7 @@ class TimeSheetSection extends Component {
                                             hourlyRateTotalHours={rateTotal}
                                           />
                                         );
-                                      });
+                                      }).toArray();
     }
 
     return (
